@@ -1,0 +1,94 @@
+Sub SFAMonthlyReport1()
+
+    Dim pptApp As Object
+    Dim pptPres As Object
+    Dim PPTSlide As Object
+    Dim PastedShape As Object ' Add this line
+    
+    Dim ExRng As Range
+    Dim RngArray As Variant
+    Dim WorksheetNames As Variant
+    Dim x As Long
+    Dim ws As Worksheet
+    
+    ' Open a new PowerPoint Application
+    Set pptApp = CreateObject("PowerPoint.Application")
+    pptApp.Visible = True
+        
+    ' Open an existing PowerPoint Presentation (change the template path accordingly)
+    Set pptPres = pptApp.Presentations.Open("C:\Users\Ezekiel Esan\Documents\PPT Template\PPT Template - July.pptx")
+    
+    ' List of worksheet names
+    WorksheetNames = Array("ALL", "R.Twining", "Patisen", "Pepsico", "Upfield", "Elixir", "Pladis", _
+                           "BEIERSDORF", "AFCC", "CZECH", "GreenSpot", "SharedD2R")
+    
+    Dim SlideIndex As Long
+    SlideIndex = 5 ' Start from slide 5
+    
+    ' Loop through each worksheet
+    For Each wsName In WorksheetNames
+        On Error Resume Next
+        Set ws = ThisWorkbook.Worksheets(wsName)
+        On Error GoTo 0
+        
+        If Not ws Is Nothing Then
+            RngArray = Array(ws.Range("B1:H14"), ws.Range("J1:P12"), ws.Range("B16:G20"))
+        
+            ' Add a new PowerPoint slide
+            Set PPTSlide = pptPres.Slides(SlideIndex) ' Use existing slide
+            
+            ' Set initial positions
+            Dim LeftPosition As Single
+            Dim TopPosition As Single
+            LeftPosition = 74
+            TopPosition = 64
+            
+            ' Loop through the array
+            For x = LBound(RngArray) To UBound(RngArray)
+            
+                Set ExRng = RngArray(x)
+            
+                ' Copy the range as a picture
+                ExRng.CopyPicture Appearance:=xlScreen, Format:=xlPicture
+                
+                ' Paste the picture into the slide
+                Set PastedShape = PPTSlide.Shapes.Paste
+                PastedShape.Left = LeftPosition
+                PastedShape.Top = TopPosition
+                
+                ' Adjust dimensions based on chart index
+                Select Case x
+                    Case 0
+                        PastedShape.Height = 269
+                        PastedShape.Width = 378
+                        PastedShape.Left = 74
+                        LeftPosition = LeftPosition + PastedShape.Width + 10 ' Adjust the spacing
+                    Case 1
+                        PastedShape.Top = 64
+                        PastedShape.Height = 269
+                        PastedShape.Width = 378
+                        PastedShape.Left = 517
+                    Case 2
+                        PastedShape.Top = 333
+                        PastedShape.Height = 123
+                        PastedShape.Width = 372
+                        PastedShape.Left = 523
+                End Select
+                
+                ' Clean up the Clipboard
+                Application.CutCopyMode = False
+                
+            Next x
+            
+            ' Increment the slide index for the next worksheet
+            SlideIndex = SlideIndex + 1
+        End If
+    Next wsName
+    
+    ' Clean up the PowerPoint objects
+    Set PPTSlide = Nothing
+    Set pptPres = Nothing
+    Set pptApp = Nothing
+End Sub
+
+
